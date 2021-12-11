@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="listaTelefonica">
+
+<head>
+    <title>Lista Telefonica</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="../0 - Angular/angular.js"></script>
+    <script src="../0 - Angular/angular-locale_pt-br.js"></script>
+    <script src="../0 - Angular/angular-messages.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/listaTelefonicaCtrl.js"></script>
+    <script src="js/services/contatosAPIService.js"></script>
+    <script src="js/services/operadorasAPIService.js"></script>
+    <script src="js/value/configValue.js"></script>
+    <script src="js/config/serialGeneratorConfig.js"></script>
+    <script src="js/services/serialGeneratorService.js"></script>
+    <script src="js/filters/nameFilter.js"></script>
+    <script src="js/filters/ellipsisFilter.js"></script>
+    <script src="js/directives/uiAlertDirective.js"></script>
+</head>
+
+<body ng-controller="listaTelefonicaCtrl">
+    <div class="jumbotron">
+        <h3>
+            {{app}}
+        </h3>
+
+        <!-- <ui-alert title="Ops, aconteceu um problema!" message="message"></ui-alert> -->
+        <ui-alert title="Ops, aconteceu um problema!">
+            {{message}}
+        </ui-alert>
+
+        <ui-alert title="Série sobre AngularJS">
+            Episódio 10 - Criando Diretivas - Parte 1
+        </ui-alert>
+        
+
+        <input type="text" ng-model="criterioBusca" placeholder="O que você está buscando?" class="form-control">
+        <table ng-show="contatos.length > 0" class="table table-striped">
+            <tr>
+                <th></th>
+                <th>Serial</th>
+                <th> <a href="" ng-click="ordenarPor('nome')">Nome</a></th>
+                <th><a href="" ng-click="ordenarPor('telefone')">Telefone</a></th>
+                <th>Operadora</th>
+                <th>Data</th>
+                <th></th>
+            </tr>
+            <tr ng-class="{'selecionado negrito': contato.selecionado }"
+                ng-repeat="contato in contatos | filter:  criterioBusca | orderBy : criterioDeOrdenacao: direcaoDaOrdenacao ">
+                <td><input type="checkbox" ng-model="contato.selecionado" /></td>
+                <td>{{contato.serial}}</td>
+                <td>{{contato.nome | name | ellipsis:14 }}</td>
+                <td>{{contato.telefone}}</td>
+                <td>{{contato.operadora.nome | lowercase }}</td>
+                <td>{{contato.data | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                    <div style="width: 20px; height: 20px;" ng-style="{'background-color': contato.cor}"></div>
+                </td>
+            </tr>
+        </table>
+        <hr />
+        <form name="contatoForm">
+            <!-- two-way databind -->
+            <input class="form-control" type="text" ng-model="contato.nome" name="nome" placeholder="nome"
+                ng-required="true" ng-minlength="10" />
+            <input class="form-control" type="text" ng-model="contato.telefone" name="telefone" placeholder="telefone"
+                ng-required="true" ng-pattern="/^\d{4,5}-\d{4}$/" />
+            <select class="form-control" ng-model="contato.operadora"
+                ng-options="operadora.nome + ' ( ' + (operadora.preco | currency) + ' ) ' for operadora in operadoras | orderBy: 'nome' ">
+                <option value="">Selecione uma operadora</option>
+            </select>
+        </form>
+
+        <div ng-show="contatoForm.nome.$dirty && contatoForm.nome.$error" ng-messages="contatoForm.nome.$error">
+            <div ng-message="required" ng-class="{'alert alert-danger': contatoForm.nome.$error}">
+                Por Favor, Preencha o campo nome!
+            </div>
+            <div ng-message="minlength" ng-class="{'alert alert-danger': contatoForm.nome.$error}">
+                O campo nome deve ter no mínimo 10 caracteres!
+            </div>
+        </div>
+
+        <div ng-show="contatoForm.telefone.$error.required &&  contatoForm.telefone.$dirty" class="alert alert-danger">
+            Por Favor, Preencha o campo telefone!
+        </div>
+        <div ng-show="contatoForm.telefone.$error.pattern" class="alert alert-danger">
+            O campo telefone deve ter o formato DDDD-DDDD!
+        </div>
+        <button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)"
+            ng-disabled="contatoForm.$invalid">Adicionar Contato</button>
+        <button class="btn btn-danger btn-block" ng-click="apagarContatos(contatos)"
+            ng-if="isContatoSelecionado(contatos)">Apagar Contato(s)</button>
+    </div>
+    <div ng-include="'view/footer.html'"></div>
+</body>
+
+</html>
